@@ -1,9 +1,9 @@
-import keyboard
 import os
 os.environ["QT_QPA_PLATFORM"] = "windows"
 import sys
 from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QPushButton, QVBoxLayout, QHBoxLayout
 from PyQt5.QtCore import QTimer, QElapsedTimer, Qt
+
 
 class Stopwatch(QWidget):
     def __init__(self):
@@ -16,6 +16,8 @@ class Stopwatch(QWidget):
         self.elapsed_timer = QElapsedTimer()
         self.timer = QTimer(self)
         self.elapsed_saved = 0 
+        
+        self.t_has_stop = False
         
         self.initUI()
 
@@ -53,6 +55,31 @@ class Stopwatch(QWidget):
         self.stop_button.clicked.connect(self.stop)
         self.reset_button.clicked.connect(self.reset)
         self.timer.timeout.connect(self.update_display)
+
+        self.start_button.setFocusPolicy(Qt.NoFocus)
+        self.stop_button.setFocusPolicy(Qt.NoFocus)
+        self.reset_button.setFocusPolicy(Qt.NoFocus)
+
+    def keyPressEvent(self, event):
+        if event.key() == Qt.Key_Space:
+            self.toggle_timer()
+
+
+    def mousePressEvent(self, event):
+        if event.button() == Qt.LeftButton:
+            self.toggle_timer()
+
+
+    def toggle_timer(self):
+        if self.timer.isActive():
+            self.stop()
+            self.t_has_stop = True
+        elif self.t_has_stop == False:
+            self.start()
+            self.t_has_stop = False
+        elif self.t_has_stop == True:
+            self.reset()
+            self.t_has_stop = False
 
     def start(self):
         if not self.timer.isActive():
