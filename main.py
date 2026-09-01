@@ -141,11 +141,8 @@ class SpeedCubingApp(QWidget):
     def __init__(self):
         super().__init__()
         
-        self.time_label = QLabel("00:00:00.000", self)
-        self.start_button = QPushButton("Start", self)
-        self.stop_button = QPushButton("Stop", self)
-        self.reset_button = QPushButton("Reset", self)
-        
+        self.time_label = QLabel("00:00.000", self)
+        self.start_button = QPushButton("Cube", self)
         self.scramble_label = QLabel("R U' F2 B D' L2...[27]", self)
         self.new_scramble_button = QPushButton("New Scramble", self)
         
@@ -153,6 +150,11 @@ class SpeedCubingApp(QWidget):
         self.timer = QTimer(self)
         self.elapsed_saved = 0 
         self.t_has_stop = False
+        self.s1 = 0
+        self.s2 = 0
+        self.s3 = 0
+        self.s4 = 0
+        self.s5 = 0 
         
         self.initUI()
 
@@ -168,27 +170,21 @@ class SpeedCubingApp(QWidget):
         
         hbox_timer = QHBoxLayout()
         hbox_timer.addWidget(self.start_button)
-        hbox_timer.addWidget(self.stop_button)
-        hbox_timer.addWidget(self.reset_button)
         vbox.addLayout(hbox_timer)
         
         self.scramble_label.setAlignment(Qt.AlignCenter)
-        self.scramble_label.setStyleSheet("font-size: 14px; font-weight: bold; padding: 10px;")
+        self.scramble_label.setStyleSheet("font-size: 28px; font-weight: bold; padding: 10px;")
         vbox.addWidget(self.scramble_label)
         
         vbox.addWidget(self.new_scramble_button)
         
         self.setLayout(vbox)
         
-        self.start_button.clicked.connect(self.start)
-        self.stop_button.clicked.connect(self.stop)
-        self.reset_button.clicked.connect(self.reset)
+        self.start_button.clicked.connect(self.toggle_timer)
         self.new_scramble_button.clicked.connect(self.generate_new_scramble)
         self.timer.timeout.connect(self.update_display)
 
         self.start_button.setFocusPolicy(Qt.NoFocus)
-        self.stop_button.setFocusPolicy(Qt.NoFocus)
-        self.reset_button.setFocusPolicy(Qt.NoFocus)
         self.new_scramble_button.setFocusPolicy(Qt.NoFocus)
 
     def keyPressEvent(self, event):
@@ -209,21 +205,33 @@ class SpeedCubingApp(QWidget):
         elif self.t_has_stop == True:
             self.reset()
             self.t_has_stop = False
+            self.generate_new_scramble()
 
     def start(self):
         if not self.timer.isActive():
             self.elapsed_timer.start()
-            self.timer.start(12) 
+            self.timer.start(12)
+
 
     def stop(self):
         if self.timer.isActive():
             self.timer.stop()
-            self.elapsed_saved += self.elapsed_timer.elapsed()
+            current_solve_time = self.elapsed_timer.elapsed()
+            
+            self.elapsed_saved += current_solve_time
+            
+            self.s1 = current_solve_time
+            
+            self.elapsed_timer.invalidate() 
+            
+            print(f"Solve Time: {self.s1} ms")
+        else:
+            print("Timer was not active.")
 
     def reset(self):
         self.timer.stop()
         self.elapsed_saved = 0
-        self.time_label.setText("00:00:00.000")
+        self.time_label.setText("00:00.000")
 
     def update_display(self):
         total_ms = self.elapsed_saved + self.elapsed_timer.elapsed()
