@@ -145,6 +145,8 @@ class SpeedCubingApp(QWidget):
         self.start_button = QPushButton("Cube", self)
         self.scramble_label = QLabel("R U' F2 B D' L2...[27]", self)
         self.new_scramble_button = QPushButton("New Scramble", self)
+        self.av_of_5 = QLabel("no current A05", self)
+        self.curent_solve = QLabel("no solve rn", self)
         
         self.elapsed_timer = QElapsedTimer()
         self.timer = QTimer(self)
@@ -167,6 +169,9 @@ class SpeedCubingApp(QWidget):
         self.time_label.setAlignment(Qt.AlignCenter)
         self.time_label.setStyleSheet("font-size: 60px; font-weight: bold;")
         vbox.addWidget(self.time_label)
+        self.curent_solve.setAlignment(Qt.AlignCenter)
+        self.curent_solve.setStyleSheet("font-size: 60px; font-weight: bold;")
+        vbox.addWidget(self.curent_solve)
         
         hbox_timer = QHBoxLayout()
         hbox_timer.addWidget(self.start_button)
@@ -211,23 +216,58 @@ class SpeedCubingApp(QWidget):
         if not self.timer.isActive():
             self.elapsed_timer.start()
             self.timer.start(12)
-
-
     def stop(self):
         if self.timer.isActive():
             self.timer.stop()
+        
             current_solve_time = self.elapsed_timer.elapsed()
-            
+
+        if self.s1 == 0:
+            self.s1 = current_solve_time / 1000.0
+        
             self.elapsed_saved += current_solve_time
-            
-            self.s1 = current_solve_time
-            
-            self.elapsed_timer.invalidate() 
-            
-            print(f"Solve Time: {self.s1} ms")
+        
+            self.elapsed_timer.invalidate()
+        
+            print(f"Solve1 Time: {self.s1:.3f} s")
+        elif self.s2 == 0:
+            self.s2 = current_solve_time / 1000.0
+                        
+            self.elapsed_saved += current_solve_time
+                        
+            self.elapsed_timer.invalidate()
+                        
+            print(f"Solve2 Time: {self.s2:.3f} s")
+        elif self.s3 == 0:
+            self.s3 = current_solve_time / 1000.0
+                        
+            self.elapsed_saved += current_solve_time
+                        
+            self.elapsed_timer.invalidate()
+                        
+            print(f"Solve3Time: {self.s2:.3f} s")
+        elif self.s4 == 0:
+            self.s4 = current_solve_time / 1000.0
+                        
+            self.elapsed_saved += current_solve_time
+                        
+            self.elapsed_timer.invalidate()
+                        
+            print(f"Solve4 Time: {self.s3:.3f} s")
+        elif self.s5 == 0:
+            self.s5 = current_solve_time / 1000.0
+                        
+            self.elapsed_saved += current_solve_time
+                        
+            self.elapsed_timer.invalidate()
+                        
+            print(f"Solve5 Time: {self.s4:.3f} s")
+
         else:
             print("Timer was not active.")
-
+        
+        self.curent_solve.setText(f"{self.s5:.3f}")
+        
     def reset(self):
         self.timer.stop()
         self.elapsed_saved = 0
