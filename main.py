@@ -2,7 +2,7 @@ import os
 os.environ["QT_QPA_PLATFORM"] = "windows"
 import sys
 import random
-from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QPushButton, QVBoxLayout, QHBoxLayout
+from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QPushButton, QVBoxLayout, QHBoxLayout, QListWidget
 from PyQt5.QtCore import QTimer, QElapsedTimer, Qt
 
 
@@ -142,48 +142,53 @@ class SpeedCubingApp(QWidget):
         super().__init__()
         
         self.time_label = QLabel("00:00.000", self)
-        self.start_button = QPushButton("Cube", self)
-        self.scramble_label = QLabel("R U' F2 B D' L2...[27]", self)
+        self.start_button = QPushButton("Start/Stop", self)
+        self.scramble_label = QLabel("", self)
         self.new_scramble_button = QPushButton("New Scramble", self)
-        self.av_of_5 = QLabel("no current A05", self)
-        self.curent_solve = QLabel("no solve rn", self)
+        self.av_of_5 = QLabel("Ao5:", self)
+        self.history_list = QListWidget(self)
         
         self.elapsed_timer = QElapsedTimer()
         self.timer = QTimer(self)
-        self.elapsed_saved = 0 
         self.t_has_stop = False
-        self.s1 = 0
-        self.s2 = 0
-        self.s3 = 0
-        self.s4 = 0
-        self.s5 = 0 
+        self.solves = []
         
         self.initUI()
+        self.generate_new_scramble()
 
     def initUI(self):
         self.setWindowTitle("SPEED CUBE")
-        self.setGeometry(100, 100, 600, 300)
+        self.setGeometry(100, 100, 700, 400)
         
-        vbox = QVBoxLayout()
+        main_layout = QHBoxLayout()
+        vbox_left = QVBoxLayout()
         
         self.time_label.setAlignment(Qt.AlignCenter)
-        self.time_label.setStyleSheet("font-size: 60px; font-weight: bold;")
-        vbox.addWidget(self.time_label)
-        self.curent_solve.setAlignment(Qt.AlignCenter)
-        self.curent_solve.setStyleSheet("font-size: 60px; font-weight: bold;")
-        vbox.addWidget(self.curent_solve)
+        self.time_label.setStyleSheet("font-size: 60px; font-weight: bold; color: #333333;")
+        vbox_left.addWidget(self.time_label)
         
-        hbox_timer = QHBoxLayout()
-        hbox_timer.addWidget(self.start_button)
-        vbox.addLayout(hbox_timer)
+        self.av_of_5.setAlignment(Qt.AlignCenter)
+        self.av_of_5.setStyleSheet("font-size: 24px; font-weight: bold; color: #555555; margin-bottom: 10px;")
+        vbox_left.addWidget(self.av_of_5)
+        
+        vbox_left.addWidget(self.start_button)
         
         self.scramble_label.setAlignment(Qt.AlignCenter)
-        self.scramble_label.setStyleSheet("font-size: 28px; font-weight: bold; padding: 10px;")
-        vbox.addWidget(self.scramble_label)
+        self.scramble_label.setStyleSheet("font-size: 18px; font-weight: bold; padding: 10px;")
+        self.scramble_label.setWordWrap(True)
+        vbox_left.addWidget(self.scramble_label)
         
-        vbox.addWidget(self.new_scramble_button)
+        vbox_left.addWidget(self.new_scramble_button)
         
-        self.setLayout(vbox)
+        vbox_right = QVBoxLayout()
+        sidebar_title = QLabel("Times List", self)
+        sidebar_title.setStyleSheet("font-weight: bold; font-size: 14px;")
+        vbox_right.addWidget(sidebar_title)
+        vbox_right.addWidget(self.history_list)
+        
+        main_layout.addLayout(vbox_left, 3)
+        main_layout.addLayout(vbox_right, 1)
+        self.setLayout(main_layout)
         
         self.start_button.clicked.connect(self.toggle_timer)
         self.new_scramble_button.clicked.connect(self.generate_new_scramble)
@@ -191,6 +196,7 @@ class SpeedCubingApp(QWidget):
 
         self.start_button.setFocusPolicy(Qt.NoFocus)
         self.new_scramble_button.setFocusPolicy(Qt.NoFocus)
+        self.history_list.setFocusPolicy(Qt.NoFocus)
 
     def keyPressEvent(self, event):
         if event.key() == Qt.Key_Space:
@@ -204,10 +210,10 @@ class SpeedCubingApp(QWidget):
         if self.timer.isActive():
             self.stop()
             self.t_has_stop = True
-        elif self.t_has_stop == False:
+        elif not self.t_has_stop:
             self.start()
             self.t_has_stop = False
-        elif self.t_has_stop == True:
+        else:
             self.reset()
             self.t_has_stop = False
             self.generate_new_scramble()
@@ -216,80 +222,64 @@ class SpeedCubingApp(QWidget):
         if not self.timer.isActive():
             self.elapsed_timer.start()
             self.timer.start(12)
+
     def stop(self):
         if self.timer.isActive():
             self.timer.stop()
-        
-            current_solve_time = self.elapsed_timer.elapsed()
+            current_solve_time = self.elapsed_timer.elapsed() / 1000.0
+            
+            self.solves.append(current_solve_time)
+            
+            formatted_time = f"{current_solve_time:.3f}"
+            self.time_label.setText(formatted_time)
+            self.history_list.addItem(f"{len(self.solves)}. {formatted_time}s")
+            self.history_list.scrollToBottom()
+            
+            print(f"Solve {len(self.solves)} Time: {formatted_time} s")
+            
+            self.calculate_current_ao5()
+            self.elapsed_timer.invalidate()
 
-        if self.s1 == 0:
-            self.s1 = current_solve_time / 1000.0
-        
-            self.elapsed_saved += current_solve_time
-        
-            self.elapsed_timer.invalidate()
-        
-            print(f"Solve1 Time: {self.s1:.3f} s")
-        elif self.s2 == 0:
-            self.s2 = current_solve_time / 1000.0
-                        
-            self.elapsed_saved += current_solve_time
-                        
-            self.elapsed_timer.invalidate()
-                        
-            print(f"Solve2 Time: {self.s2:.3f} s")
-        elif self.s3 == 0:
-            self.s3 = current_solve_time / 1000.0
-                        
-            self.elapsed_saved += current_solve_time
-                        
-            self.elapsed_timer.invalidate()
-                        
-            print(f"Solve3Time: {self.s2:.3f} s")
-        elif self.s4 == 0:
-            self.s4 = current_solve_time / 1000.0
-                        
-            self.elapsed_saved += current_solve_time
-                        
-            self.elapsed_timer.invalidate()
-                        
-            print(f"Solve4 Time: {self.s3:.3f} s")
-        elif self.s5 == 0:
-            self.s5 = current_solve_time / 1000.0
-                        
-            self.elapsed_saved += current_solve_time
-                        
-            self.elapsed_timer.invalidate()
-                        
-            print(f"Solve5 Time: {self.s4:.3f} s")
-
-        else:
-            print("Timer was not active.")
-        
-        self.curent_solve.setText(f"{self.s5:.3f}")
-        
     def reset(self):
-        self.timer.stop()
-        self.elapsed_saved = 0
         self.time_label.setText("00:00.000")
 
     def update_display(self):
-        total_ms = self.elapsed_saved + self.elapsed_timer.elapsed()
-        
-        hours = total_ms // 3600000
-        minutes = (total_ms % 3600000) // 60000
-        seconds = (total_ms % 60000) // 1000
-        milliseconds = total_ms % 1000
-        
-        self.time_label.setText(f"{hours:02}:{minutes:02}:{seconds:02}.{milliseconds:03}")
+        if self.timer.isActive():
+            elapsed = self.elapsed_timer.elapsed()
+            minutes = elapsed // 60000
+            seconds = (elapsed % 60000) // 1000
+            milliseconds = elapsed % 1000
+            self.time_label.setText(f"{minutes:02d}:{seconds:02d}.{milliseconds:03d}")
 
     def generate_new_scramble(self):
-        scramble_text = gen_scramble()
-        self.scramble_label.setText(scramble_text)
+        self.scramble_label.setText(gen_scramble())
+
+    def calculate_current_ao5(self):
+        if len(self.solves) < 5:
+            self.av_of_5.setText(f"Ao5: ({len(self.solves)}/5 solves)")
+            return
+
+        recent_solves = self.solves[-5:]
+        
+        dnf_count = sum(1 for s in recent_solves if s in ["DNF", "DNS"])
+        if dnf_count >= 2:
+            self.av_of_5.setText("Ao5: DNF")
+            return
+
+        numeric_solves = [s for s in recent_solves if isinstance(s, (int, float))]
+        numeric_solves.sort()
+
+        if dnf_count == 1:
+            middle_three = numeric_solves[1:]
+        else:
+            middle_three = numeric_solves[1:4]
+
+        ao5_val = sum(middle_three) / 3
+        self.av_of_5.setText(f"Ao5: {ao5_val:.2f}s")
 
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    speed_cubing = SpeedCubingApp()
-    speed_cubing.show()
+    ex = SpeedCubingApp()
+    ex.show()
     sys.exit(app.exec_())
