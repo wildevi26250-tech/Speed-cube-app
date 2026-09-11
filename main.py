@@ -164,7 +164,7 @@ class SpeedCubingApp(QWidget):
         vbox_left = QVBoxLayout()
         
         self.time_label.setAlignment(Qt.AlignCenter)
-        self.time_label.setStyleSheet("font-size: 60px; font-weight: bold; color: #333333;")
+        self.time_label.setStyleSheet("font-size: 60px; font-weight: bold; color: #555555;")
         vbox_left.addWidget(self.time_label)
         
         self.av_of_5.setAlignment(Qt.AlignCenter)
@@ -174,7 +174,7 @@ class SpeedCubingApp(QWidget):
         vbox_left.addWidget(self.start_button)
         
         self.scramble_label.setAlignment(Qt.AlignCenter)
-        self.scramble_label.setStyleSheet("font-size: 18px; font-weight: bold; padding: 10px;")
+        self.scramble_label.setStyleSheet("font-size: 18px; font-weight: bold; padding: 10px; color: #555555;")
         self.scramble_label.setWordWrap(True)
         vbox_left.addWidget(self.scramble_label)
         
