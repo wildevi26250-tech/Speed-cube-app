@@ -4,6 +4,7 @@ import sys
 import random
 from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QPushButton, QVBoxLayout, QHBoxLayout, QListWidget
 from PyQt5.QtCore import QTimer, QElapsedTimer, Qt
+import keyboard
 
 
 class Cube:
