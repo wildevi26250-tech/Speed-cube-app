@@ -4,7 +4,7 @@ import sys
 import random
 from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QPushButton, QVBoxLayout, QHBoxLayout, QListWidget
 from PyQt5.QtCore import QTimer, QElapsedTimer, Qt
-from PyQt5.QtGui import QPainter, QColor
+from PyQt5.QtGui import QPainter, QColor, QIcon
 
 
 class Cube:
@@ -184,8 +184,11 @@ class CubeNetWidget(QWidget):
 
 
 class SpeedCubingApp(QWidget):
+   
     def __init__(self):
         super().__init__()
+        self.setWindowIcon(QIcon('path/to/your_icon.ico'))
+        
 
         self.time_label = QLabel("00:00.000", self)
         self.start_button = QPushButton("Start/Stop", self)
@@ -304,9 +307,10 @@ class SpeedCubingApp(QWidget):
 if __name__ == "__main__":
     QApplication.setAttribute(Qt.AA_EnableHighDpiScaling, True)
     QApplication.setAttribute(Qt.AA_UseHighDpiPixmaps, True)
+    
 
     app = QApplication(sys.argv)
-
+    app.setWindowIcon(QIcon("icon.ico"))
     qss = """
     QWidget {
         background-color: #181825;
