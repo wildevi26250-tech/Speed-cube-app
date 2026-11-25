@@ -187,7 +187,7 @@ class SpeedCubingApp(QWidget):
    
     def __init__(self):
         super().__init__()
-        self.setWindowIcon(QIcon('path/to/your_icon.ico'))
+        self.setWindowIcon(QIcon('icon.ico'))
         
 
         self.time_label = QLabel("00:00.000", self)
