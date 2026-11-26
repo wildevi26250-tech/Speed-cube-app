@@ -1,10 +1,24 @@
+import ctypes
 import os
-os.environ["QT_QPA_PLATFORM"] = "windows"
 import sys
 import random
+
+if sys.platform == "win32":
+    os.environ["QT_QPA_PLATFORM"] = "windows"
+    ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(
+        "vinig.speedcubeapp.1.0"
+    )
+
 from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QPushButton, QVBoxLayout, QHBoxLayout, QListWidget
 from PyQt5.QtCore import QTimer, QElapsedTimer, Qt
 from PyQt5.QtGui import QPainter, QColor, QIcon
+
+
+def resource_path(relative_path):
+    """Get absolute path to resource, works for dev and for PyInstaller."""
+    if hasattr(sys, "_MEIPASS"):
+        return os.path.join(sys._MEIPASS, relative_path)
+    return os.path.join(os.path.abspath("."), relative_path)
 
 
 class Cube:
@@ -184,11 +198,12 @@ class CubeNetWidget(QWidget):
 
 
 class SpeedCubingApp(QWidget):
-   
     def __init__(self):
         super().__init__()
-        self.setWindowIcon(QIcon('icon.ico'))
-        
+        self.setWindowFlags(Qt.FramelessWindowHint)
+        self._drag_pos = None
+        self._was_dragged = False
+        self.setWindowIcon(QIcon(resource_path("icon.ico")))
 
         self.time_label = QLabel("00:00.000", self)
         self.start_button = QPushButton("Start/Stop", self)
@@ -307,15 +322,14 @@ class SpeedCubingApp(QWidget):
 if __name__ == "__main__":
     QApplication.setAttribute(Qt.AA_EnableHighDpiScaling, True)
     QApplication.setAttribute(Qt.AA_UseHighDpiPixmaps, True)
-    
 
     app = QApplication(sys.argv)
-    app.setWindowIcon(QIcon("icon.ico"))
+    app.setWindowIcon(QIcon(resource_path("icon.ico")))
     qss = """
     QWidget {
         background-color: #181825;
         color: #cdd6f4;
-        font-family: "Segoe UI", "Roboto", sans-serif;
+        font-family: "Segoe UI", "Helvetica Neue", "Roboto", sans-serif;
     }
     QPushButton {
         background-color: #313244;
@@ -346,6 +360,7 @@ if __name__ == "__main__":
     }
     """
     app.setStyleSheet(qss)
+    
 
     window = SpeedCubingApp()
     window.show()
